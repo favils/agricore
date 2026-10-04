@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Scratch
+/test.py
+
+# Local service report uploads
+backend/uploads/
+
+# Frontend
+node_modules/
+dist/
+frontend/.env.local

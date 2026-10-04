@@ -1,0 +1,46 @@
+import { useState } from 'react';
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import SpaRoundedIcon from '@mui/icons-material/SpaRounded';
+import { useAuth } from '../context/AuthContext.jsx';
+
+function LoginForm() {
+    const { login } = useAuth();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            await login(username, password);
+        } catch (err) {
+            if (err.response?.status === 401) {
+                setError('Incorrect username or password');
+            } else {
+                setError('Something went wrong logging in, please try again');
+            }
+        }
+    };
+
+    return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            <Paper component="form" onSubmit={handleSubmit} variant="outlined" sx={{ p: 4, width: 360 }}>
+                <Stack direction="row" sx={{ alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <SpaRoundedIcon color="primary" fontSize="large" />
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>AgriCore</Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                    by Prairie Crest Agricultural Cooperative
+                </Typography>
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                <TextField label="Username" fullWidth margin="normal" value={username} onChange={(e) => setUsername(e.target.value)} />
+                <TextField label="Password" type="password" fullWidth margin="normal" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+                    Log In
+                </Button>
+            </Paper>
+        </Box>
+    );
+}
+
+export default LoginForm;
