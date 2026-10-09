@@ -96,7 +96,7 @@ function ServiceReports() {
         { field: 'id', headerName: 'ID', width: 70 },
         { field: 'field_job_id', headerName: 'Field Job', flex: 1, minWidth: 170, valueGetter: (value) => jobTitle(value) },
         { field: 'notes', headerName: 'Notes', flex: 1.5, minWidth: 200 },
-        { field: 'file_url', headerName: 'Attachment', flex: 1, minWidth: 150, valueGetter: (value) => value.split('-').slice(5).join('-') || value },
+        { field: 'file_url', headerName: 'Attachment', flex: 1, minWidth: 150, valueGetter: (value) => value.split('/').pop().split('-').slice(5).join('-') || value },
         { field: 'created_at', headerName: 'Uploaded', type: 'dateTime', width: 180, valueGetter: (value) => new Date(value) },
         {
             field: 'actions',

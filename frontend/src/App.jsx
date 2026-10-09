@@ -19,9 +19,12 @@ import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import SpaRoundedIcon from '@mui/icons-material/SpaRounded';
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import GrassRoundedIcon from '@mui/icons-material/GrassRounded';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { useColorMode } from './context/ColorModeContext.jsx';
 import LoginForm from './components/LoginForm.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import EquipmentGrid from './components/EquipmentGrid.jsx';
@@ -34,6 +37,7 @@ const drawerWidth = 240;
 
 function Layout() {
     const { user, logout, isAdmin } = useAuth();
+    const { mode, toggleColorMode } = useColorMode();
     const [selected, setSelected] = useState(0);
 
     const pages = [
@@ -56,7 +60,10 @@ function Layout() {
                 <Box sx={{ p: 2 }}>
                     <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
                         <SpaRoundedIcon color="primary" />
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>AgriCore</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mr: 'auto' }}>AgriCore</Typography>
+                        <IconButton onClick={toggleColorMode}>
+                            {mode === 'light' ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
+                        </IconButton>
                     </Stack>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                         Prairie Crest Agricultural Cooperative

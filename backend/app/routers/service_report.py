@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import StreamingResponse
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db, get_current_user, require_role
 from app.schemas.service_report import ServiceReportRead
 from app.models import FieldJob, ServiceReport, User, UserRole
-from app.storage import delete_service_report_file, resolve_service_report_file, save_service_report_file
+from app.storage import delete_service_report_file, get_service_report_file, original_file_name, save_service_report_file
 
 router = APIRouter(prefix="/service-reports", tags=["service reports"])
 
@@ -28,10 +29,14 @@ async def download_service_report_file(
     report = await db.get(ServiceReport, report_id)
     if report is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No service report with id {report_id}")
-    path = resolve_service_report_file(report.file_url)
-    if path is None:
+    s3_object = await run_in_threadpool(get_service_report_file, report.file_url)
+    if s3_object is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attachment file is missing")
-    return FileResponse(path, filename=path.name.split("-", 5)[-1])
+    return StreamingResponse(
+        s3_object["Body"].iter_chunks(),
+        media_type=s3_object.get("ContentType", "application/octet-stream"),
+        headers={"Content-Disposition": f'attachment; filename="{original_file_name(report.file_url)}"'}
+    )
 
 @router.post("", response_model=ServiceReportRead, status_code=status.HTTP_201_CREATED)
 async def create_service_report(
@@ -44,7 +49,7 @@ async def create_service_report(
     if await db.get(FieldJob, field_job_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No field job with id {field_job_id}")
 
-    file_url = save_service_report_file(file)
+    file_url = await run_in_threadpool(save_service_report_file, file)
 
     report = ServiceReport(field_job_id=field_job_id, file_url=file_url, notes=notes)
     db.add(report)
@@ -63,4 +68,4 @@ async def delete_service_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No service report with id {report_id}")
     await db.delete(report)
     await db.commit()
-    delete_service_report_file(report.file_url)
+    await run_in_threadpool(delete_service_report_file, report.file_url)

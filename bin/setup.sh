@@ -1,18 +1,23 @@
+#!/usr/bin/env bash
 set -e
+
+cd "$(dirname "$0")/.."
+
+command -v python >/dev/null || { echo "Error: python is not installed"; exit 1; }
+command -v npm >/dev/null || { echo "Error: npm is not installed"; exit 1; }
 
 cd backend
 
-if [ ! -d ".venv" ]; then
+if [ ! -d .venv ]; then
     python -m venv .venv
 fi
 
 source .venv/Scripts/activate
 pip install -r requirements.txt
 
-if [ ! -f ".env" ]; then
-    echo "DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/agricore_db" > .env
-    echo "SECRET_KEY=change-me" >> .env
-    echo "Created backend/.env - update it with your database password and a secret key"
+if [ ! -f .env ]; then
+    printf 'DATABASE_URL=\nSECRET_KEY=\nS3_BUCKET_NAME=\n' > .env
+    echo "Created backend/.env - fill in its values"
 fi
 
 cd ../frontend
